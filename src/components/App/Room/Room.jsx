@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import io from "socket.io-client";
 import Peer from "peerjs";
 import { Button } from "@material-ui/core";
-import { withStyles } from "@material-ui/core";
+import { useHistory } from "react-router-dom";
 
 import "styles/Room/Room.scss";
 
@@ -10,6 +10,7 @@ const Room = ({
   match: {
     params: { roomId },
   },
+  location: { state },
 }) => {
   const colors = {
     pomodoro: "#FC5242",
@@ -20,46 +21,78 @@ const Room = ({
     minutes: 25,
     seconds: 0,
   });
+  const history = useHistory();
   const [user, setUser] = useState();
+  const [username, setUsername] = useState();
   const [users, setUsers] = useState();
   const [connections, setConnections] = useState([]);
   const [currentColor, setCurrentColor] = useState(colors.pomodoro);
   const [timer, setTimer] = useState();
   const [status, setStatus] = useState("Pomodoro");
   const [pomoCount, setPomoCount] = useState(0);
-  const [pomosPerSession, setPomosPerSession] = useState(4);
-  const [socket, setSocket] = useState();
+  const [pomosPerSession] = useState(4);
+  const [socket, setSocket] = useState(null);
+
+  const handleConnectionMessage = (data) => {
+    console.log("Got some data");
+    switch (data.event) {
+      case "start":
+        setTime(data.time);
+        startTimer();
+        return;
+      case "stop":
+        stopTimer();
+        setTime(data.time);
+        return;
+      case "status":
+        stopTimer();
+        setStatus(data.status);
+        setTime(data.time);
+        return;
+      case "update":
+        console.log("recieved update:", data);
+        setTime(data.time);
+        if (data.timer) startTimer();
+        setStatus(data.status);
+        return;
+      default:
+        return;
+    }
+  };
 
   useEffect(() => {
     const socket = io(process.env.REACT_APP_BACKEND_URL);
+    setSocket(socket);
     const userPeer = new Peer(null, {
       host: "/",
       port: 3001,
     });
     userPeer.on("open", (userId) => {
       setUser(userId);
+      setUsername(() => (state ? state.username : "Anonymous"));
       socket.emit("join-room", roomId, userId);
       window.addEventListener("beforeunload", (ev) => {
         socket.emit("user-disconnect", roomId, userId);
       });
     });
+
     userPeer.on("connection", (incomingConnection) => {
       setConnections((connections) => [...connections, incomingConnection]);
     });
 
-    socket.on("user-connected", async (userId) => {
+    socket.on("user-connected", (userId) => {
       const connection = userPeer.connect(userId);
-      console.log("Connectiong to user", connection.peer);
       setConnections((connections) => [...connections, connection]);
     });
 
-    socket.on("user-disconnected", async (userId) => {
+    socket.on("user-disconnected", (userId) => {
       setConnections((connections) => {
         const newConnections = connections.filter(
           (connection) => connection.peer !== userId
         );
-        if (!connections) return [];
-        else return newConnections;
+        if (!connections) {
+          return [];
+        } else return newConnections;
       });
     });
   }, [roomId]);
@@ -88,7 +121,6 @@ const Room = ({
   }, [connections]);
 
   useEffect(() => {
-    console.log("Did connections update", connections);
     if (connections.length > 0) {
       connections.forEach((connection) => {
         connection.on("data", (data) => {
@@ -102,30 +134,33 @@ const Room = ({
       });
   }, [connections, timer]);
 
-  const handleConnectionMessage = (data) => {
-    console.log("Got some data");
-    switch (data.event) {
-      case "start":
-        setTime(data.time);
-        startTimer();
-        return;
-      case "stop":
-        stopTimer();
-        setTime(data.time);
-        return;
-      case "status":
-        stopTimer();
-        setStatus(data.status);
-        setTime(data.time);
-        return;
-      default:
-        return;
+  useEffect(() => {
+    const sendUpdate = (connection) => {
+      console.log("sending update");
+      console.log(timer, time, status);
+      connection.send({
+        event: "update",
+        time: time,
+        timer: timer,
+        status: status,
+      });
+    };
+    if (socket) {
+      socket.on("update-user", (user) => {
+        const connection = connections.find(
+          (connection) => connection.peer === user
+        );
+        console.log("Connection", connection);
+        connection.on("open", () => {
+          sendUpdate(connection);
+        });
+      });
+      return () => socket.off("update-user");
     }
-  };
+  }, [timer, time, status, socket, connections]);
+
   const sendToConnections = (data) => {
-    console.log("connections to send to:", connections);
     connections.forEach((connection) => {
-      console.log("sending ", data, "to", connection);
       connection.send(data);
     });
   };
@@ -152,9 +187,9 @@ const Room = ({
       setTimer(null);
       updateStatus();
     }
-    document.title = `Pomosync - ${time.minutes < 10 ? "0" : ""}${
-      time.minutes
-    }:${time.seconds < 10 ? "0" : ""}${time.seconds}`;
+    document.title = `${time.minutes < 10 ? "0" : ""}${time.minutes}:${
+      time.seconds < 10 ? "0" : ""
+    }${time.seconds} - ${status}`;
   }, [time]);
 
   const timerTick = () => {
@@ -242,6 +277,19 @@ const Room = ({
   return (
     <div className="Room">
       <div className="spacing"></div>
+      <Button
+        style={{
+          backgroundColor: "white",
+          color: `${currentColor}`,
+          fontSize: "1.2rem",
+          width: "10ch",
+          position: "absolute",
+          left: "10%",
+        }}
+        onClick={() => history.push("/")}
+      >
+        Back
+      </Button>
       <p>CURRENTLY</p>
       <h3 style={{ fontSize: "3rem", marginTop: "1rem" }}>{status}</h3>
       <div>
@@ -273,7 +321,7 @@ const Room = ({
       >
         {!timer ? "START" : "STOP"}
       </Button>
-      <p>me: {user}</p>
+      <p>me: {username}</p>
       <p>{users && users.map((user) => `${user}, `)}</p>
     </div>
   );
