@@ -25,8 +25,10 @@ const Room = ({
   });
   const history = useHistory();
   const [user, setUser] = useState();
-  const [username, setUsername] = useState();
-  const [users, setUsers] = useState();
+  const [username, setUsername] = useState(
+    state ? state.username : "Anonymous"
+  );
+  const [users, setUsers] = useState([]);
   const [connections, setConnections] = useState([]);
   const [currentColor, setCurrentColor] = useState(colors.pomodoro);
   const [timer, setTimer] = useState();
@@ -71,8 +73,12 @@ const Room = ({
     });
     userPeer.on("open", (userId) => {
       setUser(userId);
-      setUsername(() => (state ? state.username : "Anonymous"));
-      socket.emit("join-room", roomId, userId);
+      socket.emit(
+        "join-room",
+        roomId,
+        userId,
+        state ? state.username : "Anonymous"
+      );
       window.addEventListener("beforeunload", (ev) => {
         socket.emit("user-disconnect", roomId, userId);
       });
@@ -82,8 +88,12 @@ const Room = ({
       setConnections((connections) => [...connections, incomingConnection]);
     });
 
-    socket.on("user-connected", (userId) => {
+    socket.on("user-connected", (userId, username) => {
       const connection = userPeer.connect(userId);
+      setUsers((users) => {
+        console.log(users);
+        return [...users, { id: userId, name: username }];
+      });
       setConnections((connections) => [...connections, connection]);
     });
 
@@ -140,11 +150,13 @@ const Room = ({
     const sendUpdate = (connection) => {
       console.log("sending update");
       console.log(timer, time, status);
+      const tmpUsers = users.filter((user) => user.id !== connection.peer);
       connection.send({
         event: "update",
         time: time,
         timer: timer,
         status: status,
+        users: [{ id: user, name: username }, ...tmpUsers],
       });
     };
     if (socket) {
@@ -159,12 +171,40 @@ const Room = ({
       });
       return () => socket.off("update-user");
     }
-  }, [timer, time, status, socket, connections]);
+  }, [timer, time, status, socket, connections, users]);
 
   const sendToConnections = (data) => {
     connections.forEach((connection) => {
       connection.send(data);
     });
+  };
+
+  const handleConnectionMessage = (data) => {
+    console.log("Got some data");
+    switch (data.event) {
+      case "start":
+        setTime(data.time);
+        startTimer();
+        return;
+      case "stop":
+        stopTimer();
+        setTime(data.time);
+        return;
+      case "status":
+        stopTimer();
+        setStatus(data.status);
+        setTime(data.time);
+        return;
+      case "update":
+        console.log("recieved update:", data);
+        setTime(data.time);
+        if (data.timer) startTimer();
+        setStatus(data.status);
+        setUsers([...data.users]);
+        return;
+      default:
+        return;
+    }
   };
 
   const updateStatus = () => {
@@ -278,53 +318,67 @@ const Room = ({
 
   return (
     <div className="Room">
-      <div className="spacing"></div>
-      <Button
-        style={{
-          backgroundColor: "white",
-          color: `${currentColor}`,
-          fontSize: "1.2rem",
-          width: "10ch",
-          position: "absolute",
-          left: "10%",
-        }}
-        onClick={() => history.push("/")}
-      >
-        Back
-      </Button>
-      <p>CURRENTLY</p>
-      <h3 style={{ fontSize: "3rem", marginTop: "1rem" }}>{status}</h3>
-      <div>
-        <Button size="large" className="color-white" onClick={handlePomodoro}>
-          Pomodoro
+      <Container>
+        <div className="spacing"></div>
+        <Button
+          style={{
+            backgroundColor: "white",
+            color: `${currentColor}`,
+            fontSize: "1rem",
+            width: "10ch",
+            position: "absolute",
+            left: "10%",
+            transition: "2s",
+          }}
+          onClick={() => history.push("/")}
+        >
+          Back
         </Button>
-        <Button size="large" className="color-white" onClick={handleShortBreak}>
-          Short Break
-        </Button>
-        <Button size="large" className="color-white" onClick={handleLongBreak}>
-          Long Break
-        </Button>
-      </div>
-      <h2 style={{ fontSize: "7rem", marginTop: "20px", marginBottom: "3rem" }}>
-        {time.minutes < 10 && "0"}
-        {time.minutes}:{time.seconds < 10 && "0"}
-        {time.seconds}
-      </h2>
+        <p>CURRENTLY</p>
+        <h3 style={{ fontSize: "3rem", marginTop: "1rem" }}>{status}</h3>
+        <div>
+          <Button size="large" className="color-white" onClick={handlePomodoro}>
+            Pomodoro
+          </Button>
+          <Button
+            size="large"
+            className="color-white"
+            onClick={handleShortBreak}
+          >
+            Short Break
+          </Button>
+          <Button
+            size="large"
+            className="color-white"
+            onClick={handleLongBreak}
+          >
+            Long Break
+          </Button>
+        </div>
+        <h2
+          style={{ fontSize: "7rem", marginTop: "20px", marginBottom: "3rem" }}
+        >
+          {time.minutes < 10 && "0"}
+          {time.minutes}:{time.seconds < 10 && "0"}
+          {time.seconds}
+        </h2>
 
-      <Button
-        style={{
-          backgroundColor: "white",
-          color: `${currentColor}`,
-          fontSize: "1.2rem",
-          width: "10ch",
-        }}
-        size="large"
-        onClick={toggleTimer}
-      >
-        {!timer ? "START" : "STOP"}
-      </Button>
-      <p>me: {username}</p>
-      <p>{users && users.map((user) => `${user}, `)}</p>
+        <Button
+          style={{
+            backgroundColor: "white",
+            color: `${currentColor}`,
+            fontSize: "1.2rem",
+            width: "10ch",
+            transition: "2s",
+          }}
+          size="large"
+          onClick={toggleTimer}
+        >
+          {!timer ? "START" : "STOP"}
+        </Button>
+        <p>me: {username}</p>
+        <p>{users && users.map((user) => user.name && `${user.name}, `)}</p>
+      </Container>
     </div>
   );
 };
