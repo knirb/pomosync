@@ -1,8 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
-import io from "socket.io-client";
-import Peer from "peerjs";
 import { Button } from "@material-ui/core";
+import Peer from "peerjs";
+import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
+import io from "socket.io-client";
+import { Container } from "@material-ui/core";
+import Chat from "./Chat";
 
 import "styles/Room/Room.scss";
 
