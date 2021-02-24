@@ -36,33 +36,9 @@ const Room = ({
   const [pomoCount, setPomoCount] = useState(0);
   const [pomosPerSession] = useState(4);
   const [socket, setSocket] = useState(null);
-
-  const handleConnectionMessage = (data) => {
-    console.log("Got some data");
-    switch (data.event) {
-      case "start":
-        setTime(data.time);
-        startTimer();
-        return;
-      case "stop":
-        stopTimer();
-        setTime(data.time);
-        return;
-      case "status":
-        stopTimer();
-        setStatus(data.status);
-        setTime(data.time);
-        return;
-      case "update":
-        console.log("recieved update:", data);
-        setTime(data.time);
-        if (data.timer) startTimer();
-        setStatus(data.status);
-        return;
-      default:
-        return;
-    }
-  };
+  const [messages, setMessages] = useState([
+    { sender: "knurb", message: "Woop" },
+  ]);
 
   useEffect(() => {
     const socket = io(process.env.REACT_APP_BACKEND_URL);
@@ -121,16 +97,6 @@ const Room = ({
       setCurrentColor(colors.longBreak);
     }
   }, [status]);
-
-  useEffect(() => {
-    setUsers(() => {
-      let tmpUsers = [];
-      connections.forEach((connection) => {
-        tmpUsers = [...tmpUsers, connection.peer];
-      });
-      return tmpUsers;
-    });
-  }, [connections]);
 
   useEffect(() => {
     if (connections.length > 0) {
@@ -378,6 +344,10 @@ const Room = ({
         </Button>
         <p>me: {username}</p>
         <p>{users && users.map((user) => user.name && `${user.name}, `)}</p>
+        <Chat
+          users={[{ id: user, name: username }, ...users]}
+          messages={messages}
+        />
       </Container>
     </div>
   );

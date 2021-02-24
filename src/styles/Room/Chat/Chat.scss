@@ -1,0 +1,22 @@
+.Chat {
+  width: 100%;
+  border-radius: 1rem;
+  background-color: white;
+  opacity: 0.2;
+  margin: auto;
+}
+.chat-top {
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+  display: grid;
+  width: 100%;
+  grid-template-columns: 8fr 2fr;
+  grid-column-gap: 50px;
+}
+.message-window {
+  .message {
+    text-align: left;
+  }
+}
+.user-list {
+  font-weight: bold;
+}
