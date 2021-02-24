@@ -1,5 +1,5 @@
-import Home from "components/App/Home";
-import Room from "components/App/Room";
+import Home from "./Home";
+import Room from "./Room";
 import React from "react";
 import { Route, Switch } from "react-router-dom";
 import "styles/App.scss";
