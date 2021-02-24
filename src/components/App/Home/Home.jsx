@@ -53,6 +53,7 @@ const Home = () => {
           style={{ marginBottom: "1rem" }}
         />
       </div>
+
       <Button
         variant="contained"
         onClick={
@@ -65,14 +66,6 @@ const Home = () => {
                   },
                 })
             : createNewRoom
-        }
-      >
-        New Room
-      </Button>
-      <Button
-        variant="contained"
-        onClick={
-          state.room ? () => history.push(`/room/${state.room}`) : () => {}
         }
       >
         Join room
