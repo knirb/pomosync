@@ -46,7 +46,7 @@ const Room = ({
   const [muted, setMuted] = useState(false);
 
   const [playClick] = useSound(click, { volume: 0.1 });
-  const [playAlarm] = useSound(alarm, { volume: 0.1 });
+  const [playAlarm] = useSound(alarm, { volume: 0.2 });
 
   useEffect(() => {
     if (!currentUser.name)
@@ -54,13 +54,12 @@ const Room = ({
         return { ...currentUser, name: "Anonymous" };
       });
   }, [currentUser.name]);
+
   useEffect(() => {
     const socket = io(process.env.REACT_APP_BACKEND_URL);
     setSocket(socket);
-    const userPeer = new Peer(null, {
-      host: "/",
-      port: 3001,
-    });
+    const userPeer = new Peer(null);
+
     userPeer.on("open", (userId) => {
       setCurrentUser((currentUser) => {
         return { ...currentUser, id: userId };
@@ -139,8 +138,6 @@ const Room = ({
 
   useEffect(() => {
     const sendUpdate = (connection) => {
-      console.log("sending update");
-      console.log(timer, time, status);
       const tmpUsers = users.filter((user) => user.id !== connection.peer);
       connection.send({
         event: "update",
@@ -155,7 +152,6 @@ const Room = ({
         const connection = connections.find(
           (connection) => connection.peer === user
         );
-        console.log("Connection", connection);
         connection.on("open", () => {
           sendUpdate(connection);
         });
@@ -171,7 +167,6 @@ const Room = ({
   };
 
   const handleConnectionMessage = (data) => {
-    console.log("Got some data");
     switch (data.event) {
       case "start":
         setTime(data.time);
@@ -190,7 +185,6 @@ const Room = ({
         setTime(data.time);
         return;
       case "update":
-        console.log("recieved update:", data);
         setTime(data.time);
         if (data.timer) startTimer();
         setStatus(data.status);
@@ -436,7 +430,7 @@ const Room = ({
 
             <div>{currentUser.name}</div>
             {users.map((user) => (
-              <div>{user.name}</div>
+              <div key={user.id}>{user.name}</div>
             ))}
           </div>
         </div>
