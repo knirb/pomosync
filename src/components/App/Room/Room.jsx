@@ -150,10 +150,13 @@ const Room = ({
     switch (data.event) {
       case "start":
         setTime(data.time);
+        if (!muted) playClick();
         startTimer();
         return;
       case "stop":
         stopTimer();
+        if (!muted) playClick();
+
         setTime(data.time);
         return;
       case "status":
@@ -191,6 +194,7 @@ const Room = ({
 
   useEffect(() => {
     if (time.minutes === 0 && time.seconds === 0 && timer) {
+      if (!muted) playAlarm();
       clearInterval(timer);
       setTimer(null);
       updateStatus();
@@ -244,6 +248,7 @@ const Room = ({
   };
 
   const toggleTimer = () => {
+    if (!muted) playClick();
     if (!timer) handleStart();
     else handleStop();
   };
@@ -286,20 +291,50 @@ const Room = ({
     <div className="Room">
       <Container>
         <div className="spacing"></div>
-        <Button
-          style={{
-            backgroundColor: "white",
-            color: `${currentColor}`,
-            fontSize: "1rem",
-            width: "10ch",
-            position: "absolute",
-            left: "10%",
-            transition: "2s",
-          }}
-          onClick={() => history.push("/")}
-        >
-          Back
-        </Button>
+          <div className="top-left-button-container">
+            <Button
+              style={{
+                backgroundColor: "white",
+                color: `${currentColor}`,
+                fontSize: "1rem",
+                width: "10ch",
+                transition: "2s",
+              }}
+              onClick={() =>
+                history.push({
+                  pathname: "/",
+                  state: {
+                    username: currentUser.name,
+                    room: roomId,
+                  },
+                })
+              }
+            >
+              Back
+            </Button>
+            <Button onClick={() => setMuted(!muted)}>
+              {muted ? (
+                <VolumeOff style={{ color: "white" }} />
+              ) : (
+                <VolumeUp style={{ color: "white" }} />
+              )}
+            </Button>
+          </div>
+          <h2>Chat</h2>
+          <Button
+            onClick={() => setShowChat(!showChat)}
+            style={{ color: "white" }}
+          >
+            Toggle Chat
+          </Button>
+          {showChat && (
+            <Chat
+              users={[currentUser, ...users]}
+              messages={messages}
+              onSubmit={sendMessage}
+            />
+          )}
+        </div>
         <p>CURRENTLY</p>
         <h3 style={{ fontSize: "3rem", marginTop: "1rem" }}>{status}</h3>
         <div>
