@@ -1,12 +1,15 @@
-import { Button } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
+import VolumeOff from "@material-ui/icons/VolumeOff";
+import VolumeUp from "@material-ui/icons/VolumeUp";
 import Peer from "peerjs";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
+import alarm from "resources/sounds/alarm.mp3";
+import click from "resources/sounds/click.mp3";
 import io from "socket.io-client";
-import { Container } from "@material-ui/core";
-import Chat from "./Chat";
-
 import "styles/Room/Room.scss";
+import useSound from "use-sound";
+import Chat from "./Chat";
 
 const Room = ({
   match: {
@@ -197,15 +200,15 @@ const Room = ({
     if (status === "Pomodoro") {
       if ((pomoCount + 1) % pomosPerSession === 0) {
         setStatus("Long Break");
-        setTime({ minutes: 0, seconds: 2 });
+        setTime({ minutes: 25, seconds: 0 });
       } else {
         setStatus("Short Break");
-        setTime({ minutes: 0, seconds: 1 });
+        setTime({ minutes: 5, seconds: 0 });
       }
       setPomoCount((pomoCount) => pomoCount + 1);
     } else {
       setStatus("Pomodoro");
-      setTime({ minutes: 0, seconds: 2 });
+      setTime({ minutes: 25, seconds: 0 });
     }
   };
 
@@ -319,8 +322,9 @@ const Room = ({
 
   return (
     <div className="Room">
-      <Container>
-        <div className="spacing"></div>
+      <div className="spacing"></div>
+      <div className="main-container">
+        <div className="chat-container">
           <div className="top-left-button-container">
             <Button
               style={{
@@ -365,55 +369,70 @@ const Room = ({
             />
           )}
         </div>
-        <p>CURRENTLY</p>
-        <h3 style={{ fontSize: "3rem", marginTop: "1rem" }}>{status}</h3>
-        <div>
-          <Button size="large" className="color-white" onClick={handlePomodoro}>
-            Pomodoro
-          </Button>
-          <Button
-            size="large"
-            className="color-white"
-            onClick={handleShortBreak}
-          >
-            Short Break
-          </Button>
-          <Button
-            size="large"
-            className="color-white"
-            onClick={handleLongBreak}
-          >
-            Long Break
-          </Button>
-        </div>
-        <h2
-          style={{ fontSize: "7rem", marginTop: "20px", marginBottom: "3rem" }}
-        >
-          {time.minutes < 10 && "0"}
-          {time.minutes}:{time.seconds < 10 && "0"}
-          {time.seconds}
-        </h2>
 
-        <Button
-          style={{
-            backgroundColor: "white",
-            color: `${currentColor}`,
-            fontSize: "1.2rem",
-            width: "10ch",
-            transition: "2s",
-          }}
-          size="large"
-          onClick={toggleTimer}
-        >
-          {!timer ? "START" : "STOP"}
-        </Button>
-        <p>me: {username}</p>
-        <p>{users && users.map((user) => user.name && `${user.name}, `)}</p>
-        <Chat
-          users={[{ id: user, name: username }, ...users]}
-          messages={messages}
-        />
-      </Container>
+        <section>
+          <p>CURRENTLY</p>
+          <h3 style={{ fontSize: "3rem", marginTop: "1rem" }}>{status}</h3>
+          <div>
+            <Button
+              size="large"
+              className="color-white"
+              onClick={handlePomodoro}
+            >
+              Pomodoro
+            </Button>
+            <Button
+              size="large"
+              className="color-white"
+              onClick={handleShortBreak}
+            >
+              Short Break
+            </Button>
+            <Button
+              size="large"
+              className="color-white"
+              onClick={handleLongBreak}
+            >
+              Long Break
+            </Button>
+          </div>
+          <h2
+            style={{
+              fontSize: "7rem",
+              marginTop: "20px",
+              marginBottom: "3rem",
+            }}
+          >
+            {time.minutes < 10 && "0"}
+            {time.minutes}:{time.seconds < 10 && "0"}
+            {time.seconds}
+          </h2>
+
+          <Button
+            style={{
+              backgroundColor: "white",
+              color: `${currentColor}`,
+              fontSize: "1.2rem",
+              width: "10ch",
+              transition: "2s",
+            }}
+            size="large"
+            onClick={toggleTimer}
+          >
+            {!timer ? "START" : "STOP"}
+          </Button>
+        </section>
+        <div className="right-container">
+          <div>
+            <h2>Users</h2>
+
+            <div>{currentUser.name}</div>
+            {users.map((user) => (
+              <div>{user.name}</div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -5,4 +5,18 @@
   .color-white {
     color: white !important;
   }
+  .main-container {
+    display: grid;
+    margin-left: 2rem;
+    margin-right: 2rem;
+    grid-template-columns: 3fr 8fr 3fr;
+    grid-template-rows: 70vh;
+  }
+  .chat-container {
+    height: 100%;
+  }
+  .top-left-button-container {
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+  }
 }

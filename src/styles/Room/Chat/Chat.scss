@@ -1,22 +1,34 @@
 .Chat {
   width: 100%;
-  border-radius: 1rem;
-  background-color: white;
-  opacity: 0.2;
+  height: 100%;
+  max-height: fit-content;
   margin: auto;
-}
-.chat-top {
-  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
-  display: grid;
-  width: 100%;
-  grid-template-columns: 8fr 2fr;
-  grid-column-gap: 50px;
-}
-.message-window {
-  .message {
-    text-align: left;
+  transition: 1s;
+
+  .message-window {
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+    font-size: 0.9rem;
+    border-radius: 1rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    height: 70%;
+    margin-bottom: 1rem;
+    overflow-y: auto;
+    word-break: break-word;
+    .message {
+      width: 100%;
+      display: inline-block;
+      text-align: left;
+    }
   }
-}
-.user-list {
-  font-weight: bold;
+  .chat-form-container {
+    height: 10%;
+    width: 100%;
+  }
+  chat-input-form {
+    display: grid;
+    grid-template-columns: 8fr 1fr;
+  }
+  .chat-input-underline {
+    color: white;
+  }
 }

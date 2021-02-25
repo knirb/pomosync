@@ -1,24 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
+import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
+
 import "styles/Room/Chat/Chat.scss";
 
-const Chat = ({ users, messages }) => {
+const Chat = ({ messages, onSubmit }) => {
+  const [message, setMessage] = useState("");
+
+  const handleChange = (e) => {
+    e.preventDefault();
+    setMessage(e.currentTarget.value);
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (message) onSubmit(message);
+    setMessage("");
+  };
+
   return (
     <div className="Chat">
-      <div className="chat-top">
-        <div className="message-window">
-          {messages.map((message) => (
-            <div class="message">
-              <em>{message.sender}: </em>
-              {message.message}
-            </div>
-          ))}
-        </div>
-        <div className="user-list">
-          <div>Users</div>
-          {users.map((user) => (
-            <div>{user.name}</div>
-          ))}
-        </div>
+      <div className="message-window">
+        {messages.map((message) => (
+          <div class="message">
+            {message.type === "message" && (
+              <>
+                <strong>{message.sender}: </strong>
+                {message.content}
+              </>
+            )}
+            {message.type === "notification" && <em>{message.content}</em>}
+          </div>
+        ))}
+      </div>
+      <div className="chat-form-container">
+        <form className="chat-input-form" onSubmit={handleSubmit}>
+          <TextField
+            onChange={handleChange}
+            value={message}
+            placeholder="Message..."
+            inputProps={{
+              style: {
+                color: "white",
+              },
+            }}
+          />
+          <Button type="submit" style={{ color: "white" }}>
+            send
+          </Button>
+        </form>
       </div>
     </div>
   );
