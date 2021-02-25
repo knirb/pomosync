@@ -21,7 +21,7 @@ const Chat = ({ messages, onSubmit }) => {
     <div className="Chat">
       <div className="message-window">
         {messages.map((message) => (
-          <div class="message">
+          <div key={message._id} className="message">
             {message.type === "message" && (
               <>
                 <strong>{message.sender}: </strong>

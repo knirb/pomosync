@@ -7,6 +7,8 @@ import { useHistory } from "react-router-dom";
 import alarm from "resources/sounds/alarm.mp3";
 import click from "resources/sounds/click.mp3";
 import io from "socket.io-client";
+import uuid from "uuid";
+
 import "styles/Room/Room.scss";
 import useSound from "use-sound";
 import Chat from "./Chat";
@@ -29,7 +31,7 @@ const Room = ({
   const history = useHistory();
   const [currentUser, setCurrentUser] = useState({
     id: "",
-    name: state ? state.username : "Anonymous",
+    name: localStorage.getItem("pomosync-username"),
   });
   const [users, setUsers] = useState([]);
   const [connections, setConnections] = useState([]);
@@ -81,7 +83,6 @@ const Room = ({
     socket.on("user-connected", (userId, username) => {
       const connection = userPeer.connect(userId);
       setUsers((users) => {
-        console.log(users);
         return [...users, { id: userId, name: username }];
       });
       setConnections((connections) => [...connections, connection]);
@@ -102,6 +103,7 @@ const Room = ({
 
   const notifyChat = (message) => {
     const notification = {
+      _id: uuid.v4(),
       content: message,
       type: "notification",
     };
@@ -315,6 +317,7 @@ const Room = ({
 
   const sendMessage = (text) => {
     const message = {
+      _id: uuid.v4(),
       sender: currentUser.name,
       content: text,
       type: "message",
@@ -344,7 +347,6 @@ const Room = ({
                 history.push({
                   pathname: "/",
                   state: {
-                    username: currentUser.name,
                     room: roomId,
                   },
                 })
