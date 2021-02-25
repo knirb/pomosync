@@ -47,6 +47,12 @@ const Room = ({
   const [playAlarm] = useSound(alarm, { volume: 0.1 });
 
   useEffect(() => {
+    if (!currentUser.name)
+      setCurrentUser((currentUser) => {
+        return { ...currentUser, name: "Anonymous" };
+      });
+  }, [currentUser.name]);
+  useEffect(() => {
     const socket = io(process.env.REACT_APP_BACKEND_URL);
     setSocket(socket);
     const userPeer = new Peer(null, {

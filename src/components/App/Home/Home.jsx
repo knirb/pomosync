@@ -5,7 +5,6 @@ import http from "services/httpService";
 import { TextField } from "@material-ui/core";
 
 import "styles/Home/Home.scss";
-import useSound from "use-sound";
 
 const Home = (props) => {
   const history = useHistory();
@@ -19,6 +18,10 @@ const Home = (props) => {
   };
   useEffect(() => {
     document.body.style = "background-color:#FC5242";
+    const username = localStorage.getItem("pomosync-username");
+    setState((state) => {
+      return { ...state, username: username };
+    });
   }, []);
 
   const handleChange = ({ currentTarget: input }) => {
@@ -29,55 +32,49 @@ const Home = (props) => {
   useEffect(() => {
     if (props.location.state)
       setState((state) => {
-        return props.location.state;
+        return { ...state, room: props.location.state.room };
       });
   }, [props.location.state]);
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    localStorage.setItem("pomosync-username", state.username);
+    state.room ? history.push(`/room/${state.room}`) : createNewRoom();
+  };
   return (
     <div className="Home">
       <h1 style={{ fontSize: "8rem", marginBottom: "2rem" }}>Pomosync</h1>
       <h2>Pomos are best with friends</h2>
-      <div>
+      <form onSubmit={handleSubmit}>
         <div>
+          <div>
+            <TextField
+              className={`home-room-input`}
+              name="username"
+              value={state.username}
+              inputProps={{ style: { color: "white" } }}
+              color="secondary"
+              placeholder="Username"
+              onChange={handleChange}
+              style={{ marginBottom: "1rem" }}
+            />
+          </div>
           <TextField
             className={`home-room-input`}
-            name="username"
-            value={state.username}
+            name="room"
+            value={state.room}
             inputProps={{ style: { color: "white" } }}
             color="secondary"
-            placeholder="Username"
+            placeholder="Room name"
             onChange={handleChange}
             style={{ marginBottom: "1rem" }}
           />
         </div>
-        <TextField
-          className={`home-room-input`}
-          name="room"
-          value={state.room}
-          inputProps={{ style: { color: "white" } }}
-          color="secondary"
-          placeholder="Room name"
-          onChange={handleChange}
-          style={{ marginBottom: "1rem" }}
-        />
-      </div>
 
-      <Button
-        variant="contained"
-        onClick={
-          state.room
-            ? () =>
-                history.push({
-                  pathname: `/room/${state.room}`,
-                  state: {
-                    username: state.username,
-                  },
-                })
-            : createNewRoom
-        }
-      >
-        Join room
-      </Button>
+        <Button variant="contained" type="submit">
+          Join room
+        </Button>
+      </form>
     </div>
   );
 };
