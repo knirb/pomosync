@@ -24,10 +24,10 @@ const Room = ({
     seconds: 0,
   });
   const history = useHistory();
-  const [user, setUser] = useState();
-  const [username, setUsername] = useState(
-    state ? state.username : "Anonymous"
-  );
+  const [currentUser, setCurrentUser] = useState({
+    id: "",
+    name: state ? state.username : "Anonymous",
+  });
   const [users, setUsers] = useState([]);
   const [connections, setConnections] = useState([]);
   const [currentColor, setCurrentColor] = useState(colors.pomodoro);
@@ -36,9 +36,12 @@ const Room = ({
   const [pomoCount, setPomoCount] = useState(0);
   const [pomosPerSession] = useState(4);
   const [socket, setSocket] = useState(null);
-  const [messages, setMessages] = useState([
-    { sender: "knurb", message: "Woop" },
-  ]);
+  const [showChat, setShowChat] = useState(true);
+  const [messages, setMessages] = useState([]);
+  const [muted, setMuted] = useState(false);
+
+  const [playClick] = useSound(click, { volume: 0.1 });
+  const [playAlarm] = useSound(alarm, { volume: 0.1 });
 
   useEffect(() => {
     const socket = io(process.env.REACT_APP_BACKEND_URL);
@@ -48,7 +51,9 @@ const Room = ({
       port: 3001,
     });
     userPeer.on("open", (userId) => {
-      setUser(userId);
+      setCurrentUser((currentUser) => {
+        return { ...currentUser, id: userId };
+      });
       socket.emit(
         "join-room",
         roomId,
@@ -71,6 +76,7 @@ const Room = ({
         return [...users, { id: userId, name: username }];
       });
       setConnections((connections) => [...connections, connection]);
+      notifyChat(`${username} has arrived`);
     });
 
     socket.on("user-disconnected", (userId) => {
@@ -84,6 +90,14 @@ const Room = ({
       });
     });
   }, [roomId]);
+
+  const notifyChat = (message) => {
+    const notification = {
+      content: message,
+      type: "notification",
+    };
+    setMessages((messages) => [...messages, notification]);
+  };
 
   useEffect(() => {
     if (status === "Pomodoro") {
@@ -122,7 +136,7 @@ const Room = ({
         time: time,
         timer: timer,
         status: status,
-        users: [{ id: user, name: username }, ...tmpUsers],
+        users: [currentUser, ...tmpUsers],
       });
     };
     if (socket) {
@@ -170,6 +184,9 @@ const Room = ({
         if (data.timer) startTimer();
         setStatus(data.status);
         setUsers([...data.users]);
+        return;
+      case "message":
+        setMessages((messages) => [...messages, data.message]);
         return;
       default:
         return;
@@ -285,6 +302,19 @@ const Room = ({
     stopTimer();
     setTime(newTime);
     setStatus("Long Break");
+  };
+
+  const sendMessage = (text) => {
+    const message = {
+      sender: currentUser.name,
+      content: text,
+      type: "message",
+    };
+    sendToConnections({
+      event: "message",
+      message: message,
+    });
+    setMessages((messages) => [...messages, message]);
   };
 
   return (

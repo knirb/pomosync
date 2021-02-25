@@ -5,8 +5,9 @@ import http from "services/httpService";
 import { TextField } from "@material-ui/core";
 
 import "styles/Home/Home.scss";
+import useSound from "use-sound";
 
-const Home = () => {
+const Home = (props) => {
   const history = useHistory();
   const [state, setState] = useState({
     room: "",
@@ -25,6 +26,13 @@ const Home = () => {
       return { ...state, [input.name]: input.value };
     });
   };
+  useEffect(() => {
+    if (props.location.state)
+      setState((state) => {
+        return props.location.state;
+      });
+  }, [props.location.state]);
+
   return (
     <div className="Home">
       <h1 style={{ fontSize: "8rem", marginBottom: "2rem" }}>Pomosync</h1>
