@@ -45,7 +45,7 @@ const Room = ({
   const [messages, setMessages] = useState([]);
   const [muted, setMuted] = useState(false);
 
-  const [playClick] = useSound(click, { volume: 0.1 });
+  const [playClick] = useSound(click, { volume: 0.2 });
   const [playAlarm] = useSound(alarm, { volume: 0.2 });
 
   useEffect(() => {
@@ -89,6 +89,9 @@ const Room = ({
     });
 
     socket.on("user-disconnected", (userId) => {
+      setUsers((users) => {
+        return users.filter((user) => user.id !== userId);
+      });
       setConnections((connections) => {
         const newConnections = connections.filter(
           (connection) => connection.peer !== userId
@@ -158,7 +161,7 @@ const Room = ({
       });
       return () => socket.off("update-user");
     }
-  }, [timer, time, status, socket, connections, users]);
+  }, [timer, time, status, socket, connections, users, currentUser]);
 
   const sendToConnections = (data) => {
     connections.forEach((connection) => {
