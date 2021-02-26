@@ -1,4 +1,6 @@
 .Chat {
+  $scrollbar-color: rgba(255, 255, 255, 0.2);
+  $scrollbar-color-hover: rgba(255, 255, 255, 0.4);
   width: 100%;
   height: 100%;
   max-height: fit-content;
@@ -7,7 +9,7 @@
 
   .message-window {
     padding: 0.5rem 0.5rem 0.5rem 0.5rem;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     border-radius: 1rem;
     background-color: rgba(255, 255, 255, 0.2);
     height: 70%;
@@ -19,6 +21,33 @@
       display: inline-block;
       text-align: left;
     }
+  }
+  .message-window::-webkit-scrollbar {
+    width: 0.5rem;
+  }
+
+  .message-window::-webkit-scrollbar-track {
+    display: none;
+  }
+
+  .message-window::-webkit-scrollbar-thumb {
+    border-radius: 1rem;
+  }
+
+  .message-window::-webkit-scrollbar-thumb:hover {
+    background: $scrollbar-color-hover;
+  }
+  .message-window::-webkit-scrollbar-track-piece:end {
+    background: transparent;
+    margin-bottom: 1rem;
+  }
+
+  .message-window::-webkit-scrollbar-track-piece:start {
+    background: transparent;
+    margin-top: 1rem;
+  }
+  .message-window:hover::-webkit-scrollbar-thumb {
+    background: $scrollbar-color;
   }
   .chat-form-container {
     height: 10%;
