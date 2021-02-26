@@ -64,12 +64,7 @@ const Room = ({
       setCurrentUser((currentUser) => {
         return { ...currentUser, id: userId };
       });
-      socket.emit(
-        "join-room",
-        roomId,
-        userId,
-        state ? state.username : "Anonymous"
-      );
+      socket.emit("join-room", roomId, userId, currentUser.name);
       window.addEventListener("beforeunload", (ev) => {
         socket.emit("user-disconnect", roomId, userId);
       });
