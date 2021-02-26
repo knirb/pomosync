@@ -17,7 +17,6 @@ const Room = ({
   match: {
     params: { roomId },
   },
-  location: { state },
 }) => {
   const colors = {
     pomodoro: "#FC5242",
@@ -347,14 +346,15 @@ const Room = ({
                 width: "10ch",
                 transition: "2s",
               }}
-              onClick={() =>
+              onClick={() => {
+                socket.emit("user-disconnect", roomId, userId);
                 history.push({
                   pathname: "/",
                   state: {
                     room: roomId,
                   },
-                })
-              }
+                });
+              }}
             >
               Back
             </Button>
