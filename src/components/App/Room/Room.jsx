@@ -2,7 +2,7 @@ import Button from "@material-ui/core/Button";
 import VolumeOff from "@material-ui/icons/VolumeOff";
 import VolumeUp from "@material-ui/icons/VolumeUp";
 import Peer from "peerjs";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import alarm from "resources/sounds/alarm.mp3";
 import click from "resources/sounds/click.mp3";
@@ -44,6 +44,8 @@ const Room = ({
   const [showChat, setShowChat] = useState(true);
   const [messages, setMessages] = useState([]);
   const [muted, setMuted] = useState(false);
+
+  const chatScrollHelper = useRef(null);
 
   const [playClick] = useSound(click, { volume: 0.2 });
   const [playAlarm] = useSound(alarm, { volume: 0.2 });
@@ -164,6 +166,13 @@ const Room = ({
       connection.send(data);
     });
   };
+  useEffect(() => {
+    chatScrollHelper.current.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "start",
+    });
+  }, [messages]);
 
   const handleConnectionMessage = (data) => {
     switch (data.event) {
@@ -369,6 +378,7 @@ const Room = ({
               users={[currentUser, ...users]}
               messages={messages}
               onSubmit={sendMessage}
+              bottomRef={chatScrollHelper}
             />
           )}
         </div>

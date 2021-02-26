@@ -4,7 +4,7 @@ import TextField from "@material-ui/core/TextField";
 
 import "styles/Room/Chat/Chat.scss";
 
-const Chat = ({ messages, onSubmit }) => {
+const Chat = ({ messages, onSubmit, bottomRef }) => {
   const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
@@ -31,6 +31,7 @@ const Chat = ({ messages, onSubmit }) => {
             {message.type === "notification" && <em>{message.content}</em>}
           </div>
         ))}
+        <div ref={bottomRef}></div>
       </div>
       <div className="chat-form-container">
         <form className="chat-input-form" onSubmit={handleSubmit}>
