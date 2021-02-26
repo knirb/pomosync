@@ -347,7 +347,7 @@ const Room = ({
                 transition: "2s",
               }}
               onClick={() => {
-                socket.emit("user-disconnect", roomId, userId);
+                socket.emit("user-disconnect", roomId, currentUser.id);
                 history.push({
                   pathname: "/",
                   state: {
