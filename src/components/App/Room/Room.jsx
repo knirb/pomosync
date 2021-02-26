@@ -142,6 +142,7 @@ const Room = ({
         time: time,
         timer: timer,
         status: status,
+        pomoCount: pomoCount,
         users: [currentUser, ...tmpUsers],
       });
     };
@@ -183,10 +184,11 @@ const Room = ({
         setTime(data.time);
         return;
       case "update":
+        setUsers([...data.users]);
+        setPomoCount(data.pomoCount);
+        setStatus(data.status);
         setTime(data.time);
         if (data.timer) startTimer();
-        setStatus(data.status);
-        setUsers([...data.users]);
         return;
       case "message":
         setMessages((messages) => [...messages, data.message]);
@@ -374,6 +376,7 @@ const Room = ({
         <section>
           <p>CURRENTLY</p>
           <h3 style={{ fontSize: "3rem", marginTop: "1rem" }}>{status}</h3>
+
           <div>
             <Button
               size="large"
@@ -416,6 +419,7 @@ const Room = ({
               fontSize: "1.2rem",
               width: "10ch",
               transition: "2s",
+              marginBottom: "5rem",
             }}
             size="large"
             onClick={toggleTimer}
@@ -424,6 +428,12 @@ const Room = ({
           </Button>
         </section>
         <div className="right-container">
+          <h2>Pomos</h2>
+          <div className="pomocount">
+            Current: {(pomoCount % pomosPerSession) + 1}/{pomosPerSession}
+          </div>
+          <div className="pomocount">Completed: {pomoCount}</div>
+
           <div>
             <h2>Users</h2>
 
