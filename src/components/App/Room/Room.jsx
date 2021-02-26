@@ -250,21 +250,21 @@ const Room = ({
   };
 
   const handleStart = () => {
+    startTimer();
     if (connections.length > 0)
       sendToConnections({
         event: "start",
         time: time,
       });
-    startTimer();
   };
 
   const handleStop = () => {
+    stopTimer();
     if (connections.length > 0)
       sendToConnections({
         event: "stop",
         time: time,
       });
-    stopTimer();
   };
 
   const toggleTimer = () => {
@@ -272,6 +272,7 @@ const Room = ({
     if (!timer) handleStart();
     else handleStop();
   };
+
   const handlePomodoro = () => {
     sendToConnections({
       event: "status",
