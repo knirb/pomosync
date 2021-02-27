@@ -7,6 +7,8 @@ import { useHistory } from "react-router-dom";
 import alarm from "resources/sounds/alarm.mp3";
 import click from "resources/sounds/click.mp3";
 import io from "socket.io-client";
+import { calcEndTime, calcTimeLeft } from "../../../functions/timeFunctions";
+
 import "styles/Room/Room.scss";
 import useSound from "use-sound";
 import uuid from "uuid";
@@ -41,8 +43,8 @@ const Room = ({
   const [socket, setSocket] = useState(null);
   const [status, setStatus] = useState("Pomodoro");
   const [time, setTime] = useState({
-    minutes: 25,
-    seconds: 0,
+    minutes: 0,
+    seconds: 1,
   });
   const [timer, setTimer] = useState();
   const [users, setUsers] = useState([]);
@@ -163,7 +165,8 @@ const Room = ({
   }, [messages]);
 
   useEffect(() => {
-    if (time.minutes === 0 && time.seconds === 0 && timer) {
+    console.log(time);
+    if (time.minutes <= 0 && time.seconds <= 0 && timer) {
       if (!muted) playAlarm();
       stopTimer();
       updateStatus();
@@ -239,21 +242,18 @@ const Room = ({
     }
   };
 
-  const timerTick = () => {
+  const timerTick = (endTime) => {
     setTime((time) => {
-      if (time.seconds === 0) {
-        return { minutes: time.minutes - 1, seconds: 59 };
-      } else {
-        return { ...time, seconds: time.seconds - 1 };
-      }
+      return calcTimeLeft(endTime);
     });
   };
 
   const startTimer = () => {
+    const endTime = calcEndTime(time);
     if (!timer) {
       setTimer(
-        setInterval(() => {
-          timerTick();
+        setInterval((endtime) => {
+          timerTick(endTime);
         }, 1000)
       );
     }
