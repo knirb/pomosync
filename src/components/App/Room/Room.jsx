@@ -2,15 +2,14 @@ import Button from "@material-ui/core/Button";
 import VolumeOff from "@material-ui/icons/VolumeOff";
 import VolumeUp from "@material-ui/icons/VolumeUp";
 import Peer from "peerjs";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useHistory } from "react-router-dom";
 import alarm from "resources/sounds/alarm.mp3";
 import click from "resources/sounds/click.mp3";
 import io from "socket.io-client";
-import uuid from "uuid";
-
 import "styles/Room/Room.scss";
 import useSound from "use-sound";
+import uuid from "uuid";
 import Chat from "./Chat";
 
 const Room = ({
@@ -23,26 +22,28 @@ const Room = ({
     shortBreak: "#5495F0",
     longBreak: "#444345",
   };
-  const [time, setTime] = useState({
-    minutes: 25,
-    seconds: 0,
-  });
+
   const history = useHistory();
+
+  const [connections, setConnections] = useState([]);
+  const [currentColor, setCurrentColor] = useState(colors.pomodoro);
   const [currentUser, setCurrentUser] = useState({
     id: "",
     name: localStorage.getItem("pomosync-username"),
   });
-  const [users, setUsers] = useState([]);
-  const [connections, setConnections] = useState([]);
-  const [currentColor, setCurrentColor] = useState(colors.pomodoro);
-  const [timer, setTimer] = useState();
-  const [status, setStatus] = useState("Pomodoro");
-  const [pomoCount, setPomoCount] = useState(0);
-  const [pomosPerSession] = useState(4);
-  const [socket, setSocket] = useState(null);
-  const [showChat, setShowChat] = useState(true);
   const [messages, setMessages] = useState([]);
   const [muted, setMuted] = useState(false);
+  const [pomoCount, setPomoCount] = useState(0);
+  const [pomosPerSession] = useState(4);
+  const [showChat, setShowChat] = useState(true);
+  const [socket, setSocket] = useState(null);
+  const [status, setStatus] = useState("Pomodoro");
+  const [time, setTime] = useState({
+    minutes: 25,
+    seconds: 0,
+  });
+  const [timer, setTimer] = useState();
+  const [users, setUsers] = useState([]);
 
   const chatScrollHelper = useRef(null);
 
@@ -99,15 +100,6 @@ const Room = ({
     });
   }, [roomId]);
 
-  const notifyChat = (message) => {
-    const notification = {
-      _id: uuid.v4(),
-      content: message,
-      type: "notification",
-    };
-    setMessages((messages) => [...messages, notification]);
-  };
-
   useEffect(() => {
     if (status === "Pomodoro") {
       document.body.style = `transition: 2s; background-color:${colors.pomodoro}`;
@@ -160,11 +152,6 @@ const Room = ({
     }
   }, [timer, time, status, socket, connections, users, currentUser]);
 
-  const sendToConnections = (data) => {
-    connections.forEach((connection) => {
-      connection.send(data);
-    });
-  };
   useEffect(() => {
     chatScrollHelper.current.scrollIntoView({
       behavior: "smooth",
@@ -172,6 +159,33 @@ const Room = ({
       inline: "start",
     });
   }, [messages]);
+
+  useEffect(() => {
+    if (time.minutes === 0 && time.seconds === 0 && timer) {
+      if (!muted) playAlarm();
+      clearInterval(timer);
+      setTimer(null);
+      updateStatus();
+    }
+    document.title = `${time.minutes < 10 ? "0" : ""}${time.minutes}:${
+      time.seconds < 10 ? "0" : ""
+    }${time.seconds} - ${status}`;
+  }, [time]);
+
+  const notifyChat = (message) => {
+    const notification = {
+      _id: uuid.v4(),
+      content: message,
+      type: "notification",
+    };
+    setMessages((messages) => [...messages, notification]);
+  };
+
+  const sendToConnections = (data) => {
+    connections.forEach((connection) => {
+      connection.send(data);
+    });
+  };
 
   const handleConnectionMessage = (data) => {
     switch (data.event) {
@@ -183,7 +197,6 @@ const Room = ({
       case "stop":
         stopTimer();
         if (!muted) playClick();
-
         setTime(data.time);
         return;
       case "status":
@@ -221,18 +234,6 @@ const Room = ({
       setTime({ minutes: 25, seconds: 0 });
     }
   };
-
-  useEffect(() => {
-    if (time.minutes === 0 && time.seconds === 0 && timer) {
-      if (!muted) playAlarm();
-      clearInterval(timer);
-      setTimer(null);
-      updateStatus();
-    }
-    document.title = `${time.minutes < 10 ? "0" : ""}${time.minutes}:${
-      time.seconds < 10 ? "0" : ""
-    }${time.seconds} - ${status}`;
-  }, [time]);
 
   const timerTick = () => {
     setTime((time) => {
