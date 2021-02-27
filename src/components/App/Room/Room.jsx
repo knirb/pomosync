@@ -364,7 +364,6 @@ const Room = ({
               )}
             </Button>
           </div>
-          <h2>Chat</h2>
           <Button
             onClick={() => setShowChat(!showChat)}
             style={{ color: "white" }}
