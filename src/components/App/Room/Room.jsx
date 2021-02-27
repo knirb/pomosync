@@ -360,11 +360,10 @@ const Room = ({
               {muted ? (
                 <VolumeOff style={{ color: "white" }} />
               ) : (
-                <VolumeUp style={{ color: "white" }} />
-              )}
+                  <VolumeUp style={{ color: "white" }} />
+                )}
             </Button>
           </div>
-          <h2>Chat</h2>
           <Button
             onClick={() => setShowChat(!showChat)}
             style={{ color: "white" }}
