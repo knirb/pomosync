@@ -1,7 +1,7 @@
 import { React, useEffect } from "react";
 import { Fireworks as FW } from 'fireworks/lib/react'
 
-const fireTime = 4000
+const fireTime = 10000
 
 const Fireworks = ({ setShow }) => {
   let fxProps = {
