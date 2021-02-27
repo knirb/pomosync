@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 
@@ -8,7 +8,6 @@ const Chat = ({ messages, onSubmit, bottomRef }) => {
   const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
-    e.preventDefault();
     setMessage(e.currentTarget.value);
   };
   const handleSubmit = (e) => {

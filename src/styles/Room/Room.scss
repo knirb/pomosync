@@ -12,12 +12,16 @@
     grid-template-columns: 3fr 8fr 3fr;
     grid-template-rows: 70vh;
   }
-  .chat-container {
-    height: 100%;
-  }
   .top-left-button-container {
     margin-top: 1rem;
     margin-bottom: 2rem;
+  }
+  .middle-container {
+    h2 {
+      font-size: 7rem;
+      margin-top: 1rem;
+      margin-bottom: 3rem;
+    }
   }
   .pomocount {
     font-size: 1.1rem;

@@ -11,6 +11,8 @@ import "styles/Room/Room.scss";
 import useSound from "use-sound";
 import uuid from "uuid";
 import Chat from "./Chat";
+import BackButton from "./BackButton/BackButton";
+import StartButton from "./StartButtton/index";
 
 const Room = ({
   match: {
@@ -150,7 +152,7 @@ const Room = ({
       });
       return () => socket.off("update-user");
     }
-  }, [timer, time, status, socket, connections, users, currentUser]);
+  }, [timer, time, status, socket, connections, users, currentUser, pomoCount]);
 
   useEffect(() => {
     chatScrollHelper.current.scrollIntoView({
@@ -163,14 +165,16 @@ const Room = ({
   useEffect(() => {
     if (time.minutes === 0 && time.seconds === 0 && timer) {
       if (!muted) playAlarm();
-      clearInterval(timer);
-      setTimer(null);
+      stopTimer();
       updateStatus();
     }
+  }, [time, muted]);
+
+  useEffect(() => {
     document.title = `${time.minutes < 10 ? "0" : ""}${time.minutes}:${
       time.seconds < 10 ? "0" : ""
     }${time.seconds} - ${status}`;
-  }, [time]);
+  }, [time, status]);
 
   const notifyChat = (message) => {
     const notification = {
@@ -319,6 +323,16 @@ const Room = ({
     setStatus("Long Break");
   };
 
+  const handleBack = () => {
+    socket.emit("user-disconnect", roomId, currentUser.id);
+    history.push({
+      pathname: "/",
+      state: {
+        room: roomId,
+      },
+    });
+  };
+
   const sendMessage = (text) => {
     const message = {
       _id: uuid.v4(),
@@ -337,28 +351,11 @@ const Room = ({
     <div className="Room">
       <div className="spacing"></div>
       <div className="main-container">
-        <div className="chat-container">
+        <div className="left-container">
           <div className="top-left-button-container">
-            <Button
-              style={{
-                backgroundColor: "white",
-                color: `${currentColor}`,
-                fontSize: "1rem",
-                width: "10ch",
-                transition: "2s",
-              }}
-              onClick={() => {
-                socket.emit("user-disconnect", roomId, currentUser.id);
-                history.push({
-                  pathname: "/",
-                  state: {
-                    room: roomId,
-                  },
-                });
-              }}
-            >
+            <BackButton color={currentColor} onClick={handleBack}>
               Back
-            </Button>
+            </BackButton>
             <Button onClick={() => setMuted(!muted)}>
               {muted ? (
                 <VolumeOff style={{ color: "white" }} />
@@ -383,11 +380,9 @@ const Room = ({
             />
           )}
         </div>
-
-        <section>
+        <div className="middle-container">
           <p>CURRENTLY</p>
           <h3 style={{ fontSize: "3rem", marginTop: "1rem" }}>{status}</h3>
-
           <div>
             <Button
               size="large"
@@ -411,43 +406,23 @@ const Room = ({
               Long Break
             </Button>
           </div>
-          <h2
-            style={{
-              fontSize: "7rem",
-              marginTop: "20px",
-              marginBottom: "3rem",
-            }}
-          >
+          <h2>
             {time.minutes < 10 && "0"}
             {time.minutes}:{time.seconds < 10 && "0"}
             {time.seconds}
           </h2>
-
-          <Button
-            style={{
-              backgroundColor: "white",
-              color: `${currentColor}`,
-              fontSize: "1.2rem",
-              width: "10ch",
-              transition: "2s",
-              marginBottom: "5rem",
-            }}
-            size="large"
-            onClick={toggleTimer}
-          >
+          <StartButton onClick={toggleTimer} color={currentColor}>
             {!timer ? "START" : "STOP"}
-          </Button>
-        </section>
+          </StartButton>
+        </div>
         <div className="right-container">
           <h2>Pomos</h2>
           <div className="pomocount">
             Current: {(pomoCount % pomosPerSession) + 1}/{pomosPerSession}
           </div>
           <div className="pomocount">Completed: {pomoCount}</div>
-
           <div>
             <h2>Users</h2>
-
             <div>{currentUser.name}</div>
             {users.map((user) => (
               <div key={user.id}>{user.name}</div>
