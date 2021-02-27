@@ -43,8 +43,8 @@ const Room = ({
   const [socket, setSocket] = useState(null);
   const [status, setStatus] = useState("Pomodoro");
   const [time, setTime] = useState({
-    minutes: 0,
-    seconds: 1,
+    minutes: 25,
+    seconds: 0,
   });
   const [timer, setTimer] = useState();
   const [users, setUsers] = useState([]);
