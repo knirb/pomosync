@@ -15,6 +15,8 @@ import uuid from "uuid";
 import Chat from "./Chat";
 import BackButton from "./BackButton/BackButton";
 import StartButton from "./StartButtton/index";
+import Fireworks from "./Fireworks/Fireworks"
+const pomoSessionLength = { minutes: 25, seconds: 0 }
 
 const Room = ({
   match: {
@@ -31,6 +33,7 @@ const Room = ({
 
   const [connections, setConnections] = useState([]);
   const [currentColor, setCurrentColor] = useState(colors.pomodoro);
+  const [showFireworks, setShowFireworks] = useState(false)
   const [currentUser, setCurrentUser] = useState({
     id: "",
     name: localStorage.getItem("pomosync-username"),
@@ -42,10 +45,7 @@ const Room = ({
   const [showChat, setShowChat] = useState(true);
   const [socket, setSocket] = useState(null);
   const [status, setStatus] = useState("Pomodoro");
-  const [time, setTime] = useState({
-    minutes: 25,
-    seconds: 0,
-  });
+  const [time, setTime] = useState(pomoSessionLength);
   const [timer, setTimer] = useState();
   const [users, setUsers] = useState([]);
 
@@ -231,6 +231,7 @@ const Room = ({
       if ((pomoCount + 1) % pomosPerSession === 0) {
         setStatus("Long Break");
         setTime({ minutes: 25, seconds: 0 });
+        setShowFireworks(true);
       } else {
         setStatus("Short Break");
         setTime({ minutes: 5, seconds: 0 });
@@ -238,7 +239,7 @@ const Room = ({
       setPomoCount((pomoCount) => pomoCount + 1);
     } else {
       setStatus("Pomodoro");
-      setTime({ minutes: 25, seconds: 0 });
+      setTime(pomoSessionLength);
     }
   };
 
@@ -291,11 +292,11 @@ const Room = ({
   const handlePomodoro = () => {
     sendToConnections({
       event: "status",
-      time: { minutes: 25, seconds: 0 },
+      time: pomoSessionLength,
       status: "Pomodoro",
     });
     stopTimer();
-    setTime({ minutes: 25, seconds: 0 });
+    setTime(pomoSessionLength);
     setStatus("Pomodoro");
   };
 
@@ -349,6 +350,7 @@ const Room = ({
 
   return (
     <div className="Room">
+      {showFireworks && <Fireworks setShow={setShowFireworks} />}
       <div className="spacing"></div>
       <div className="main-container">
         <div className="left-container">
