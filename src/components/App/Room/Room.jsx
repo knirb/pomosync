@@ -15,8 +15,7 @@ import uuid from "uuid";
 import Chat from "./Chat";
 import BackButton from "./BackButton/BackButton";
 import StartButton from "./StartButtton/index";
-import Fireworks from "./Fireworks/Fireworks"
-const pomoSessionLength = { minutes: 25, seconds: 0 }
+import Fireworks from "./Fireworks/Fireworks";
 
 const Room = ({
   match: {
@@ -33,7 +32,7 @@ const Room = ({
 
   const [connections, setConnections] = useState([]);
   const [currentColor, setCurrentColor] = useState(colors.pomodoro);
-  const [showFireworks, setShowFireworks] = useState(false)
+  const [showFireworks, setShowFireworks] = useState(false);
   const [currentUser, setCurrentUser] = useState({
     id: "",
     name: localStorage.getItem("pomosync-username"),
@@ -45,9 +44,25 @@ const Room = ({
   const [showChat, setShowChat] = useState(true);
   const [socket, setSocket] = useState(null);
   const [status, setStatus] = useState("Pomodoro");
-  const [time, setTime] = useState(pomoSessionLength);
+  const [time, setTime] = useState({
+    minutes: 25,
+    seconds: 0,
+  });
   const [timer, setTimer] = useState();
   const [users, setUsers] = useState([]);
+  const [pomoLength, setPomoSessionLength] = useState({
+    minutes: 25,
+    seconds: 0,
+  });
+  const [shortBreakLength, setShortBreakLength] = useState({
+    minutes: 5,
+    seconds: 0,
+  });
+
+  const [longBreakLength, setLongBreakLength] = useState({
+    minutes: 25,
+    seconds: 0,
+  });
 
   const chatScrollHelper = useRef(null);
 
@@ -165,7 +180,6 @@ const Room = ({
   }, [messages]);
 
   useEffect(() => {
-    console.log(time);
     if (time.minutes <= 0 && time.seconds <= 0 && timer) {
       if (!muted) playAlarm();
       stopTimer();
@@ -230,16 +244,16 @@ const Room = ({
     if (status === "Pomodoro") {
       if ((pomoCount + 1) % pomosPerSession === 0) {
         setStatus("Long Break");
-        setTime({ minutes: 25, seconds: 0 });
+        setTime(longBreakLength);
         setShowFireworks(true);
       } else {
         setStatus("Short Break");
-        setTime({ minutes: 5, seconds: 0 });
+        setTime(shortBreakLength);
       }
       setPomoCount((pomoCount) => pomoCount + 1);
     } else {
       setStatus("Pomodoro");
-      setTime(pomoSessionLength);
+      setTime(pomoLength);
     }
   };
 
@@ -293,35 +307,33 @@ const Room = ({
   const handlePomodoro = () => {
     sendToConnections({
       event: "status",
-      time: pomoSessionLength,
+      time: pomoLength,
       status: "Pomodoro",
     });
     stopTimer();
-    setTime(pomoSessionLength);
+    setTime(pomoLength);
     setStatus("Pomodoro");
   };
 
   const handleShortBreak = () => {
-    const newTime = { minutes: 5, seconds: 0 };
     sendToConnections({
       event: "status",
-      time: newTime,
+      time: shortBreakLength,
       status: "Short Break",
     });
     stopTimer();
-    setTime(newTime);
+    setTime(shortBreakLength);
     setStatus("Short Break");
   };
 
   const handleLongBreak = () => {
-    const newTime = { minutes: 25, seconds: 0 };
     sendToConnections({
       event: "status",
-      time: newTime,
+      time: longBreakLength,
       status: "Long Break",
     });
     stopTimer();
-    setTime(newTime);
+    setTime(longBreakLength);
     setStatus("Long Break");
   };
 
