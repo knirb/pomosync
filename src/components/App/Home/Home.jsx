@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
 import http from "services/httpService";
-import { TextField } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
 
 import "styles/Home/Home.scss";
+import schema from "schema/homeSchema";
 
 const Home = (props) => {
   const history = useHistory();
@@ -12,10 +14,11 @@ const Home = (props) => {
     room: "",
     username: "",
   });
-  const createNewRoom = async () => {
-    const { data: res } = await http.get("/newroom");
-    history.push(`/room/${res.room}`);
-  };
+  const [errors, setErrors] = useState({
+    room: "",
+    username: "",
+  });
+
   useEffect(() => {
     document.body.style = "background-color:#FC5242";
     const username = localStorage.getItem("pomosync-username");
@@ -29,18 +32,33 @@ const Home = (props) => {
       return { ...state, [input.name]: input.value };
     });
   };
-  useEffect(() => {
-    if (props.location.state)
-      setState((state) => {
-        return { ...state, room: props.location.state.room };
+  const validateInput = (input) => {
+    if (input.value.length > schema[input.name].maxLength.value)
+      setErrors((errors) => {
+        return {
+          ...errors,
+          [input.name]: schema[input.name].maxLength.message,
+        };
       });
-  }, [props.location.state]);
+    else if (errors[input.name])
+      setErrors((errors) => {
+        return { ...errors, [input.name]: "" };
+      });
+  };
+
+  const handleChange = ({ currentTarget: input }) => {
+    validateInput(input);
+    setState((state) => {
+      return { ...state, [input.name]: input.value };
+    });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     localStorage.setItem("pomosync-username", state.username);
     state.room ? history.push(`/room/${state.room}`) : createNewRoom();
   };
+
   return (
     <div className="Home">
       <h1 style={{ fontSize: "8rem", marginBottom: "2rem" }}>Pomosync</h1>
@@ -51,27 +69,37 @@ const Home = (props) => {
             <TextField
               className={`home-room-input`}
               name="username"
+              error={errors.username ? true : false}
+              helperText={errors.username}
               value={state.username}
               inputProps={{ style: { color: "white" } }}
-              color="secondary"
+              formHelperTextProps={{ style: { backgroundColor: "white" } }}
               placeholder="Username"
               onChange={handleChange}
               style={{ marginBottom: "1rem" }}
             />
           </div>
-          <TextField
-            className={`home-room-input`}
-            name="room"
-            value={state.room}
-            inputProps={{ style: { color: "white" } }}
-            color="secondary"
-            placeholder="Room name"
-            onChange={handleChange}
-            style={{ marginBottom: "1rem" }}
-          />
+          <div>
+            <TextField
+              className={`home-room-input`}
+              name="room"
+              error={errors.room ? true : false}
+              helperText={errors.room}
+              value={state.room}
+              inputProps={{ style: { color: "white" } }}
+              formHelperTextProps={{ style: { color: "white" } }}
+              placeholder="Room name"
+              onChange={handleChange}
+              style={{ marginBottom: "1rem" }}
+            />
+          </div>
         </div>
 
-        <Button variant="contained" type="submit">
+        <Button
+          disabled={errors.room || errors.username}
+          variant="contained"
+          type="submit"
+        >
           Join room
         </Button>
       </form>
