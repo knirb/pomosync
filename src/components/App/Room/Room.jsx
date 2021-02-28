@@ -197,9 +197,9 @@ const Room = ({
   const handleConnectionMessage = (data) => {
     switch (data.event) {
       case "start":
-        setTime(data.time);
         if (!muted) playClick();
-        startTimer();
+        setTime(data.time);
+        startTimer(data.time);
         return;
       case "stop":
         stopTimer();
@@ -216,7 +216,7 @@ const Room = ({
         setPomoCount(data.pomoCount);
         setStatus(data.status);
         setTime(data.time);
-        if (data.timer) startTimer();
+        if (data.timer) startTimer(data.time);
         return;
       case "message":
         setMessages((messages) => [...messages, data.message]);
@@ -249,8 +249,8 @@ const Room = ({
     });
   };
 
-  const startTimer = () => {
-    const endTime = calcEndTime(time);
+  const startTimer = (timeRemaining) => {
+    const endTime = calcEndTime(timeRemaining);
     if (!timer) {
       setTimer(
         setInterval((endtime) => {
@@ -266,7 +266,8 @@ const Room = ({
   };
 
   const handleStart = () => {
-    startTimer();
+    console.log(time);
+    startTimer(time);
     if (connections.length > 0)
       sendToConnections({
         event: "start",
