@@ -398,25 +398,13 @@ const Room = ({
           <p>CURRENTLY</p>
           <h3 style={{ fontSize: "3rem", marginTop: "1rem" }}>{status}</h3>
           <div>
-            <Button
-              size="large"
-              className="color-white"
-              onClick={handlePomodoro}
-            >
+            <Button size="large" color="pomodoro" onClick={handlePomodoro}>
               Pomodoro
             </Button>
-            <Button
-              size="large"
-              className="color-white"
-              onClick={handleShortBreak}
-            >
+            <Button size="large" onClick={handleShortBreak}>
               Short Break
             </Button>
-            <Button
-              size="large"
-              className="color-white"
-              onClick={handleLongBreak}
-            >
+            <Button size="large" onClick={handleLongBreak}>
               Long Break
             </Button>
           </div>

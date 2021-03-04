@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
 import http from "services/httpService";
 import TextField from "@material-ui/core/TextField";
@@ -27,11 +26,18 @@ const Home = (props) => {
     });
   }, []);
 
-  const handleChange = ({ currentTarget: input }) => {
-    setState((state) => {
-      return { ...state, [input.name]: input.value };
-    });
+  useEffect(() => {
+    if (props.location.state)
+      setState((state) => {
+        return { ...state, room: props.location.state.room };
+      });
+  }, [props.location.state]);
+
+  const createNewRoom = async () => {
+    const { data: res } = await http.get("/newroom");
+    history.push(`/room/${res.room}`);
   };
+
   const validateInput = (input) => {
     if (input.value.length > schema[input.name].maxLength.value)
       setErrors((errors) => {
@@ -86,8 +92,6 @@ const Home = (props) => {
               error={errors.room ? true : false}
               helperText={errors.room}
               value={state.room}
-              inputProps={{ style: { color: "white" } }}
-              formHelperTextProps={{ style: { color: "white" } }}
               placeholder="Room name"
               onChange={handleChange}
               style={{ marginBottom: "1rem" }}
