@@ -15,9 +15,9 @@ export const calcEndTime = (timeLeft) => {
 export const calcTimeLeft = (endTime) => {
   const diff = endTime - Date.now();
 
-  let minutes = Math.floor(diff / minute);
+  let minutes = Math.floor((diff + second) / minute);
   minutes = minutes >= 0 ? minutes : 0;
-  let seconds = Math.ceil((diff - minutes * minute) / second);
+  let seconds = Math.round((diff - minutes * minute) / second);
   seconds = seconds >= 0 ? seconds : 0;
   return { minutes, seconds };
 };
