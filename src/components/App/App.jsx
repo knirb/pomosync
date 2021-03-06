@@ -7,6 +7,7 @@ import { Route, Switch } from "react-router-dom";
 import "styles/App.scss";
 import Home from "./Home";
 import Room from "./Room";
+import Footer from "./Footer";
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
           <Route path="/room/:roomId" component={Room} />
           <Route path="/" component={Home} />
         </Switch>
+        <Footer />
       </MuiThemeProvider>
     </div>
   );
